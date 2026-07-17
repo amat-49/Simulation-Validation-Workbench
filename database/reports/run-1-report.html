@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulation Report - Run 1</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; }
+    h1, h2 { color: #333; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #f4f4f4; }
+    tr:nth-child(even) { background: #fafafa; }
+    .status { font-weight: bold; }
+    .pass { color: green; }
+    .fail { color: red; }
+  </style>
+</head>
+<body>
+  <h1>Simulation Report - Run 1</h1>
+  <p><strong>Scenario:</strong> Dummy Scenario</p>
+  <p><strong>Overall Status:</strong> <span class="status">completed</span></p>
+
+  <h2>Output Metrics</h2>
+  
+    <table>
+      <thead><tr><th>Metric</th><th>Value</th><th>Unit</th></tr></thead>
+      <tbody>
+        <tr><td>throughput</td><td>0</td><td>ops/s</td></tr>
+      </tbody>
+    </table>
+  
+
+  <h2>Validation Results</h2>
+  
+    <table>
+      <thead><tr><th>Metric</th><th>Expected Min</th><th>Expected Max</th><th>Actual Value</th><th>Status</th><th>Message</th></tr></thead>
+      <tbody>
+        <tr><td>throughput</td><td>0</td><td>100</td><td>0</td><td>pass</td><td>Zero throughput is acceptable for this test.</td></tr>
+      </tbody>
+    </table>
+  
+
+  <h2>Execution Logs</h2>
+  
+    <table>
+      <thead><tr><th>Timestamp</th><th>Level</th><th>Message</th></tr></thead>
+      <tbody>
+        <tr><td>2026-07-15T22:12:39.846Z</td><td>INFO</td><td>Test run logged successfully.</td></tr>
+      </tbody>
+    </table>
+  
+</body>
+</html>

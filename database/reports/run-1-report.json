@@ -1,0 +1,46 @@
+{
+  "run": {
+    "run_id": 1,
+    "scenario_id": 1,
+    "start_time": "2026-07-15T22:12:39.842Z",
+    "end_time": "2026-07-15T22:12:39.845Z",
+    "overall_status": "completed",
+    "execution_duration": 0,
+    "config_snapshot": "{\"test\":true}",
+    "scenario_name": "Dummy Scenario",
+    "scenario_description": "Test scenario for database validation",
+    "config_file_path": "configs/dummy.json",
+    "scenario_created_at": "2026-07-15 22:12:39"
+  },
+  "outputs": [
+    {
+      "output_id": 1,
+      "run_id": 1,
+      "metric_name": "throughput",
+      "metric_value": 0,
+      "unit": "ops/s"
+    }
+  ],
+  "validations": [
+    {
+      "validation_id": 1,
+      "run_id": 1,
+      "metric_name": "throughput",
+      "expected_min": 0,
+      "expected_max": 100,
+      "actual_value": 0,
+      "result_status": "pass",
+      "message": "Zero throughput is acceptable for this test."
+    }
+  ],
+  "logs": [
+    {
+      "log_id": 1,
+      "run_id": 1,
+      "timestamp": "2026-07-15T22:12:39.846Z",
+      "log_level": "INFO",
+      "message": "Test run logged successfully."
+    }
+  ],
+  "reports": []
+}
