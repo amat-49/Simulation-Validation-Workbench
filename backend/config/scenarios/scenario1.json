@@ -1,0 +1,21 @@
+{
+    "scenarioName": "Engine Test",
+
+    "parameters": {
+        "speed": 120,
+        "temperature": 80,
+        "pressure": 50
+    },
+
+    "validation": {
+        "temperature": {
+            "min": 60,
+            "max": 90
+        },
+
+        "pressure": {
+            "min": 40,
+            "max": 70
+        }
+    }
+}
