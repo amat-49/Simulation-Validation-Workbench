@@ -1,0 +1,68 @@
+{
+  "tests": 10,
+  "name": "AllTests",
+  "testsuites": [
+    {
+      "name": "SimulationEngineTest",
+      "tests": 5,
+      "testsuite": [
+        {
+          "name": "ComputesMetricsCorrectly",
+          "file": "\/Users\/amataddoais\/Documents\/UFM\/cis376\/Simulation-Validation-Workbench\/engine\/tests\/test_simulation.cpp",
+          "line": 7
+        },
+        {
+          "name": "FailsOnMissingParameter",
+          "file": "\/Users\/amataddoais\/Documents\/UFM\/cis376\/Simulation-Validation-Workbench\/engine\/tests\/test_simulation.cpp",
+          "line": 25
+        },
+        {
+          "name": "FailsOnNonNumericParameter",
+          "file": "\/Users\/amataddoais\/Documents\/UFM\/cis376\/Simulation-Validation-Workbench\/engine\/tests\/test_simulation.cpp",
+          "line": 39
+        },
+        {
+          "name": "FailsOnZeroMass",
+          "file": "\/Users\/amataddoais\/Documents\/UFM\/cis376\/Simulation-Validation-Workbench\/engine\/tests\/test_simulation.cpp",
+          "line": 54
+        },
+        {
+          "name": "FailsOnNegativeDuration",
+          "file": "\/Users\/amataddoais\/Documents\/UFM\/cis376\/Simulation-Validation-Workbench\/engine\/tests\/test_simulation.cpp",
+          "line": 69
+        }
+      ]
+    },
+    {
+      "name": "ValidatorTest",
+      "tests": 5,
+      "testsuite": [
+        {
+          "name": "PassesWhenWithinRange",
+          "file": "\/Users\/amataddoais\/Documents\/UFM\/cis376\/Simulation-Validation-Workbench\/engine\/tests\/test_validation.cpp",
+          "line": 7
+        },
+        {
+          "name": "FailsWhenOutOfRange",
+          "file": "\/Users\/amataddoais\/Documents\/UFM\/cis376\/Simulation-Validation-Workbench\/engine\/tests\/test_validation.cpp",
+          "line": 22
+        },
+        {
+          "name": "FailsWhenMetricMissingFromOutput",
+          "file": "\/Users\/amataddoais\/Documents\/UFM\/cis376\/Simulation-Validation-Workbench\/engine\/tests\/test_validation.cpp",
+          "line": 35
+        },
+        {
+          "name": "OverallPassRequiresAllMetricsToPass",
+          "file": "\/Users\/amataddoais\/Documents\/UFM\/cis376\/Simulation-Validation-Workbench\/engine\/tests\/test_validation.cpp",
+          "line": 49
+        },
+        {
+          "name": "EmptyExpectedMetricsProducesEmptySummary",
+          "file": "\/Users\/amataddoais\/Documents\/UFM\/cis376\/Simulation-Validation-Workbench\/engine\/tests\/test_validation.cpp",
+          "line": 66
+        }
+      ]
+    }
+  ]
+}

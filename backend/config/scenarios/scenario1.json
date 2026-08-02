@@ -1,21 +1,24 @@
 {
-    "scenarioName": "Engine Test",
-
-    "parameters": {
-        "speed": 120,
-        "temperature": 80,
-        "pressure": 50
+  "scenario_name": "basic_test",
+  "parameters": {
+    "initial_velocity": 0.0,
+    "mass": 10.0,
+    "thrust": 50.0,
+    "drag_coefficient": 5.0,
+    "duration": 4.0
+  },
+  "expected_metrics": {
+    "final_velocity": {
+      "expected_min": 15.0,
+      "expected_max": 20.0
     },
-
-    "validation": {
-        "temperature": {
-            "min": 60,
-            "max": 90
-        },
-
-        "pressure": {
-            "min": 40,
-            "max": 70
-        }
+    "distance_traveled": {
+      "expected_min": 30.0,
+      "expected_max": 40.0
+    },
+    "energy_consumed": {
+      "expected_min": 190.0,
+      "expected_max": 210.0
     }
+  }
 }

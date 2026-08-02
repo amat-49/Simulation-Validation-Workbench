@@ -1,0 +1,5 @@
+if(EXISTS "/Users/amataddoais/Documents/UFM/cis376/Simulation-Validation-Workbench/engine/build/sim_tests_e3b0c442_tests.cmake")
+  include("/Users/amataddoais/Documents/UFM/cis376/Simulation-Validation-Workbench/engine/build/sim_tests_e3b0c442_tests.cmake")
+else()
+  add_test(sim_tests_NOT_BUILT sim_tests_NOT_BUILT)
+endif()

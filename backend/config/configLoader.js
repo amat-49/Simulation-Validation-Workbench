@@ -25,7 +25,7 @@ function loadConfig(filePath) {
         const config = JSON.parse(fileContents);
 
         // This will print the configuration and makes debugging easier
-        console.log(`Configuration "${config.scenarioName}" loaded successfully.`);
+        console.log(`Configuration "${config.scenario_name}" loaded successfully.`);
 
         return config;
 
