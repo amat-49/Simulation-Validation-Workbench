@@ -1,0 +1,24 @@
+{
+  "scenario_name": "bad_basic_test",
+  "parameters": {
+    "initial_velocity": 0.0,
+    "mass": 10.0,
+    "thrust": 50.0,
+    "drag_coefficient": 5.0,
+    "duration": 4.0
+  },
+  "expected_metrics": {
+    "final_velocity": {
+      "expected_min": "fast",
+      "expected_max": 20.0
+    },
+    "distance_traveled": {
+      "expected_min": 30.0,
+      "expected_max": "slow"
+    },
+    "energy_consumed": {
+      "expected_min": 190.0,
+      "expected_max": 210.0
+    }
+  }
+}

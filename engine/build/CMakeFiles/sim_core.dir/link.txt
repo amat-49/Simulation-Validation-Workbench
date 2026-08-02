@@ -1,0 +1,2 @@
+/usr/bin/ar qc libsim_core.a CMakeFiles/sim_core.dir/src/simulation.cpp.o CMakeFiles/sim_core.dir/src/validation.cpp.o
+/usr/bin/ranlib libsim_core.a
