@@ -6,7 +6,6 @@ body {
   min-height: 100vh;
 }
 
-button,
-input {
-  font: inherit;
+#root {
+  min-height: 100vh;
 }
