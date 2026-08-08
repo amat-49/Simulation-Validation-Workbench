@@ -1,5 +1,14 @@
 {
+  "name": "simulation-validation-workbench",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
   "dependencies": {
     "better-sqlite3": "^13.0.2"
+  },
+  "devDependencies": {
+    "electron": "^43.3.0"
   }
 }

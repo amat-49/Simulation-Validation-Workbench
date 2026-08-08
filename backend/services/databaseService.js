@@ -66,6 +66,22 @@ async function runAndSaveSimulation(configPath, scenarioId) {
     return dbManager.getRunById(runId);
 }
 
+function getLatestRunResults() {
+    const run = dbManager.getLatestRun(); // Assumes you have a query to grab the most recent run
+    if (!run) return null;
+
+    return {
+        scenario_id: run.scenario_id,
+        scenario_name: run.scenario_name || "Simulation Scenario",
+        overall_status: run.overall_status, // "PASS" or "FAIL"
+        start_time: run.start_time,
+        metrics: dbManager.getOutputsByRunId(run.run_id), // Returns object or array of metrics
+        validation_results: dbManager.getValidationResultsByRunId(run.run_id) // Returns validation rows
+    };
+}
+
+
+
 module.exports = {
     runAndSaveSimulation
 };

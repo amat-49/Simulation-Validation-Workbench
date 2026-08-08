@@ -1,275 +1,79 @@
-import { useRef, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import ExecutionLog from "../components/ExecutionLog";
+import "./Execution.css";
 
-function Execution() {
+export default function Execution() {
+  const [logs, setLogs] = useState("Ready to execute...");
+  const [executionResult, setExecutionResult] = useState(null);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const intervalRef = useRef(null);
 
-  const storedScenario = localStorage.getItem("selectedScenario");
-
-  let scenario = null;
-
-  try {
-    scenario = storedScenario ? JSON.parse(storedScenario) : null;
-  } catch {
-    scenario = null;
-  }
-
-  const [status, setStatus] = useState("Ready");
-  const [progress, setProgress] = useState(0);
-  const [logs, setLogs] = useState([]);
-  const [isRunning, setIsRunning] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-
-  function addLog(level, message) {
-    setLogs((currentLogs) => [
-      ...currentLogs,
-      {
-        id: crypto.randomUUID(),
-        timestamp: new Date().toLocaleTimeString(),
-        level,
-        message,
-      },
-    ]);
-  }
-
-  function runSimulation() {
-    if (!scenario) {
-      setErrorMessage("No scenario has been selected.");
+  const handleRunSimulation = async () => {
+    const configPath = localStorage.getItem("selectedScenarioPath");
+    if (!configPath) {
+      alert("No configuration file selected! Please select one from the Dashboard or Configuration page.");
       return;
     }
 
-    if (isRunning) {
-      return;
-    }
+    setLoading(true);
+    setLogs("Sending file path to backend engine...\nRunning simulation...");
 
-    setErrorMessage("");
-    setLogs([]);
-    setProgress(0);
-    setStatus("Running");
-    setIsRunning(true);
+    try {
+      // Calls your Electron IPC handler which runs the engine and saves to the DB
+      const response = await window.electronAPI.runSimulation(configPath);
 
-    addLog("INFO", `Starting "${scenario.name}".`);
+      console.log("FULL ENGINE RESPONSE:", response);
 
-    const steps = [
-      {
-        progress: 20,
-        level: "INFO",
-        message: "Loading scenario configuration.",
-      },
-      {
-        progress: 40,
-        level: "INFO",
-        message: "Configuration loaded successfully.",
-      },
-      {
-        progress: 60,
-        level: "INFO",
-        message: "Running simulation engine.",
-      },
-      {
-        progress: 80,
-        level: "INFO",
-        message: "Validating simulation output.",
-      },
-      {
-        progress: 100,
-        level: "SUCCESS",
-        message: "Simulation completed successfully.",
-      },
-    ];
-
-    let stepIndex = 0;
-
-    intervalRef.current = window.setInterval(() => {
-      const step = steps[stepIndex];
-
-      setProgress(step.progress);
-      addLog(step.level, step.message);
-
-      if (step.progress === 100) {
-        window.clearInterval(intervalRef.current);
-        intervalRef.current = null;
-
-        const result = {
-          scenarioId: scenario.id,
-          scenarioName: scenario.name,
-          overallStatus: "PASS",
-          executionTime: "2.4 seconds",
-          completedAt: new Date().toISOString(),
-          metrics: [
-            {
-              name: "Temperature",
-              actual: scenario.configuration.temperature - 1,
-              minimum: scenario.configuration.expectedMin,
-              maximum: scenario.configuration.expectedMax,
-              status: "PASS",
-            },
-            {
-              name: "Pressure",
-              actual: scenario.configuration.pressure + 1,
-              minimum: 10,
-              maximum: 40,
-              status: "PASS",
-            },
-            {
-              name: "Response Time",
-              actual: 2.4,
-              minimum: 0,
-              maximum: 3,
-              status: "PASS",
-            },
-          ],
-        };
-
-        localStorage.setItem(
-          "latestSimulationResult",
-          JSON.stringify(result)
-        );
-
-        setStatus("Completed");
-        setIsRunning(false);
+      if (response.success) {
+        setExecutionResult(response.results);
+        setLogs(JSON.stringify(response.results, null, 2));
+        localStorage.setItem("currentSimulationResult", JSON.stringify(response.results));
+      } else {
+        setLogs(`Error: ${response.error}`);
       }
-
-      stepIndex += 1;
-    }, 800);
-  }
-
-  function resetExecution() {
-    if (intervalRef.current) {
-      window.clearInterval(intervalRef.current);
-      intervalRef.current = null;
+    } catch (err) {
+      setLogs(`Execution Exception: ${err.message}`);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    setStatus("Ready");
-    setProgress(0);
-    setLogs([]);
-    setIsRunning(false);
-    setErrorMessage("");
-  }
-
-  if (!scenario) {
-    return (
-      <section>
-        <div className="empty-state">
-          <h2>No Scenario Selected</h2>
-          <p>
-            Select and review a simulation scenario before starting execution.
-          </p>
-
-          <button
-            type="button"
-            className="primary-button"
-            onClick={() => navigate("/")}
-          >
-            Return to Dashboard
-          </button>
-        </div>
-      </section>
-    );
-  }
+  const handleViewResults = () => {
+    navigate("/results");
+  };
 
   return (
-    <section>
-      <div className="page-header">
-        <div>
-          <p className="eyebrow">Simulation Control</p>
-          <h2>Simulation Execution</h2>
-          <p>{scenario.name}</p>
-        </div>
+    <div className="execution-container">
+      <h2>Simulation Execution</h2>
 
-        <span className={`status-badge ${status.toLowerCase()}`}>
-          {status}
-        </span>
+      <div className="config-file-card">
+        <h3>Selected Configuration File</h3>
+        <p className="path-text">{localStorage.getItem("selectedScenarioPath") || "No file selected"}</p>
       </div>
 
-      <div className="panel">
-        <div className="panel-heading">
-          <div>
-            <h3>Execution Control</h3>
-            <p>
-              Start the simulation and monitor its progress in real time.
-            </p>
-          </div>
+      <div className="execution-action-bar">
+        <button className="secondary-btn" onClick={() => navigate("/dashboard")}>
+          Back to Dashboard
+        </button>
+        
+        <button className="primary-btn run-btn" onClick={handleRunSimulation} disabled={loading}>
+          {loading ? "Running..." : "Run Simulation"}
+        </button>
 
-          <span className="progress-value">{progress}%</span>
-        </div>
-
-        <div className="progress-track">
-          <div
-            className="progress-fill"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-
-        <div className="execution-summary">
-          <div>
-            <span>Scenario</span>
-            <strong>{scenario.name}</strong>
-          </div>
-
-          <div>
-            <span>Duration</span>
-            <strong>{scenario.configuration.duration} seconds</strong>
-          </div>
-
-          <div>
-            <span>Status</span>
-            <strong>{status}</strong>
-          </div>
-        </div>
-
-        {errorMessage && (
-          <p className="error-message" role="alert">
-            {errorMessage}
-          </p>
+        {/* This button appears once the execution completes successfully */}
+        {executionResult && (
+          <button className="success-btn results-jump-btn" onClick={handleViewResults}>
+            View Detailed Results →
+          </button>
         )}
-
-        <div className="button-group execution-buttons">
-          <button
-            type="button"
-            className="secondary-button"
-            disabled={isRunning}
-            onClick={resetExecution}
-          >
-            Reset
-          </button>
-
-          <button
-            type="button"
-            className="primary-button"
-            disabled={isRunning || status === "Completed"}
-            onClick={runSimulation}
-          >
-            {isRunning ? "Simulation Running..." : "Run Simulation"}
-          </button>
-        </div>
       </div>
 
-      <ExecutionLog logs={logs} />
-
-      <div className="page-actions split-actions">
-        <button
-          type="button"
-          className="secondary-button"
-          disabled={isRunning}
-          onClick={() => navigate("/configuration")}
-        >
-          Back to Configuration
-        </button>
-
-        <button
-          type="button"
-          className="primary-button"
-          disabled={status !== "Completed"}
-          onClick={() => navigate("/results")}
-        >
-          View Results
-        </button>
+      <div className="logs-section">
+        <h3>Execution Logs</h3>
+        <pre className="logs-output">
+          <code>{logs}</code>
+        </pre>
       </div>
-    </section>
+    </div>
   );
 }
-
-export default Execution;

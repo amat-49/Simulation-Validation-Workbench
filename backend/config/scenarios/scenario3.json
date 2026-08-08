@@ -1,0 +1,15 @@
+{
+  "scenario_name": "Thermal Overload Failure",
+  "parameters": {
+    "initial_velocity": 10.0,
+    "mass": 25.0,
+    "thrust": 15.0,
+    "drag_coefficient": 12.0,
+    "duration": 3.0
+  },
+  "expected_metrics": {
+    "final_velocity": { "expected_min": 40.0, "expected_max": 50.0 },
+    "distance_traveled": { "expected_min": 100.0, "expected_max": 120.0 },
+    "energy_consumed": { "expected_min": 400.0, "expected_max": 450.0 }
+  }
+}

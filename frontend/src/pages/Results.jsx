@@ -1,154 +1,123 @@
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import "./Results.css";
 
-function Results() {
+export default function Results() {
+  const [resultData, setResultData] = useState(null);
   const navigate = useNavigate();
-  const storedResult = localStorage.getItem("latestSimulationResult");
 
-  let result = null;
+  useEffect(() => {
+    const saved = localStorage.getItem("currentSimulationResult");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setResultData(parsed.run ? { ...parsed.run, metrics: parsed.metrics, validation_results: parsed.validation_results } : parsed);
+      } catch (e) {
+        console.error("Failed to parse results", e);
+      }
+    }
+  }, []);
 
-  try {
-    result = storedResult ? JSON.parse(storedResult) : null;
-  } catch {
-    result = null;
-  }
-
-  if (!result) {
+  if (!resultData) {
     return (
-      <section>
+      <div className="results-container">
+        <h2>Simulation Results</h2>
         <div className="empty-state">
-          <h2>No Results Available</h2>
-          <p>
-            Run a simulation before attempting to view validation results.
-          </p>
-
-          <button
-            type="button"
-            className="primary-button"
-            onClick={() => navigate("/execution")}
-          >
-            Go to Execution
-          </button>
+          <p>No execution results found. Run a simulation from the Execution page first.</p>
         </div>
-      </section>
+      </div>
     );
   }
 
+  const status = resultData.overall_status || resultData.overall_validation || "FAIL";
+  const isPassed = status === "PASS";
+  const fileName = localStorage.getItem("selectedScenarioPath") ? localStorage.getItem("selectedScenarioPath").split('/').pop() : "N/A";
+
+  // Function to trigger JSON download
+  const downloadJSON = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(resultData, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `simulation_report_run_${resultData.run_id || 'result'}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  };
+
+  // Simple clean YAML converter for the report structure
+  const downloadYAML = () => {
+    let yamlContent = `run_id: ${resultData.run_id || 'N/A'}\n`;
+    yamlContent += `file_name: "${fileName}"\n`;
+    yamlContent += `timestamp: "${resultData.start_time || 'N/A'}"\n`;
+    yamlContent += `overall_status: "${status}"\n`;
+    
+    if (resultData.metrics) {
+      yamlContent += `metrics:\n`;
+      for (const [k, v] of Object.entries(resultData.metrics)) {
+        yamlContent += `  ${k}: ${v}\n`;
+      }
+    }
+
+    const blob = new Blob([yamlContent], { type: 'text/yaml;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", url);
+    downloadAnchor.setAttribute("download", `simulation_report_run_${resultData.run_id || 'result'}.yaml`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    URL.revokeObjectURL(url);
+  };
+
   return (
-    <section>
-      <div className="page-header">
+    <div className="results-container">
+      <div className="results-header">
         <div>
-          <p className="eyebrow">Validation Summary</p>
-          <h2>Validation Results</h2>
-          <p>{result.scenarioName}</p>
+          <h2>Simulation Results Summary</h2>
+          <p className="subtitle">Execution report overview and export options.</p>
         </div>
-
-        <span
-          className={`status-badge ${result.overallStatus.toLowerCase()}`}
-        >
-          Overall {result.overallStatus}
-        </span>
-      </div>
-
-      <div className="results-summary">
-        <div className="summary-card">
-          <span>Scenario</span>
-          <strong>{result.scenarioName}</strong>
-        </div>
-
-        <div className="summary-card">
-          <span>Execution Time</span>
-          <strong>{result.executionTime}</strong>
-        </div>
-
-        <div className="summary-card">
-          <span>Completed</span>
-          <strong>
-            {new Date(result.completedAt).toLocaleString()}
-          </strong>
-        </div>
-
-        <div className="summary-card">
-          <span>Overall Status</span>
-          <strong>{result.overallStatus}</strong>
+        <div className="action-buttons-group">
+          <button className="download-btn json-btn" onClick={downloadJSON}>
+            Download JSON
+          </button>
+          <button className="download-btn yaml-btn" onClick={downloadYAML}>
+            Download YAML
+          </button>
         </div>
       </div>
 
-      <div className="panel">
-        <div className="panel-heading">
-          <div>
-            <h3>Metric Validation</h3>
-            <p>
-              Each simulation output is compared against its expected range.
-            </p>
+      <div className="results-action-bar">
+        <button className="secondary-btn" onClick={() => navigate("/execution")}>
+          ← Back to Execution
+        </button>
+      </div>
+
+      {/* Prominent Status & Details Card */}
+      <div className="results-hero-card">
+        <div className="hero-status-section">
+          <span className="hero-label">Overall Status</span>
+          <div className={`hero-badge ${isPassed ? "pass" : "fail"}`}>
+            {status}
           </div>
         </div>
 
-        <div className="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Metric</th>
-                <th>Actual</th>
-                <th>Minimum</th>
-                <th>Maximum</th>
-                <th>Status</th>
-              </tr>
-            </thead>
+        <div className="hero-divider"></div>
 
-            <tbody>
-              {result.metrics.map((metric) => (
-                <tr key={metric.name}>
-                  <td>{metric.name}</td>
-                  <td>{metric.actual}</td>
-                  <td>{metric.minimum}</td>
-                  <td>{metric.maximum}</td>
-                  <td>
-                    <span
-                      className={`status-badge ${metric.status.toLowerCase()}`}
-                    >
-                      {metric.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="hero-meta-section">
+          <div className="meta-item">
+            <span className="meta-label">Test / Run ID</span>
+            <span className="meta-value">#{resultData.run_id || "N/A"}</span>
+          </div>
+          <div className="meta-item">
+            <span className="meta-label">Configuration File</span>
+            <span className="meta-value file-name-highlight">{fileName}</span>
+          </div>
+          <div className="meta-item">
+            <span className="meta-label">Timestamp</span>
+            <span className="meta-value">{resultData.start_time ? new Date(resultData.start_time).toLocaleString() : "N/A"}</span>
+          </div>
         </div>
       </div>
-
-      <div
-        className={
-          result.overallStatus === "PASS"
-            ? "result-message result-message-pass"
-            : "result-message result-message-fail"
-        }
-      >
-        {result.overallStatus === "PASS"
-          ? "All validation checks completed successfully."
-          : "One or more validation checks failed. Review the affected metrics."}
-      </div>
-
-      <div className="page-actions split-actions">
-        <button
-          type="button"
-          className="secondary-button"
-          onClick={() => navigate("/execution")}
-        >
-          Back to Execution
-        </button>
-
-        <button
-          type="button"
-          className="primary-button"
-          onClick={() => navigate("/reports")}
-        >
-          Continue to Reports
-        </button>
-      </div>
-    </section>
+    </div>
   );
 }
-
-export default Results;
-
- 

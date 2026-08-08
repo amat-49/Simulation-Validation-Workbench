@@ -6,7 +6,6 @@ const links = [
   { path: "/execution", label: "Execution" },
   { path: "/results", label: "Results" },
   { path: "/history", label: "History" },
-  { path: "/reports", label: "Reports" },
 ];
 
 function Navigation() {
