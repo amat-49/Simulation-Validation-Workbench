@@ -19,6 +19,13 @@ export default function Execution() {
     setLogs("Sending file path to backend engine...\nRunning simulation...");
 
     try {
+
+      // Check if Electron bridge exists
+      if (!window.electronAPI || typeof window.electronAPI.runSimulation !== 'function') {
+        throw new Error("Electron API bridge not found. Are you running this inside the desktop app?");
+      }
+
+
       // Calls your Electron IPC handler which runs the engine and saves to the DB
       const response = await window.electronAPI.runSimulation(configPath);
 
