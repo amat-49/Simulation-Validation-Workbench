@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "concurrently \"npm run dev --prefix frontend\" \"electron .\""
   },
   "dependencies": {
     "better-sqlite3": "^13.0.2"
   },
   "devDependencies": {
+    "concurrently": "^10.0.4",
     "electron": "^43.3.0"
   }
 }
