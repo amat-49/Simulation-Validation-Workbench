@@ -1,0 +1,15 @@
+{
+  "scenario_name": "High Load Stress Test",
+  "parameters": {
+    "initial_velocity": 2.0,
+    "mass": 8.0,
+    "thrust": 60.0,
+    "drag_coefficient": 4.0,
+    "duration": 5.0
+  },
+  "expected_metrics": {
+    "final_velocity": { "expected_min": 0.0, "expected_max": 50.0 },
+    "distance_traveled": { "expected_min": 0.0, "expected_max": 200.0 },
+    "energy_consumed": { "expected_min": 0.0, "expected_max": 1000.0 }
+  }
+}

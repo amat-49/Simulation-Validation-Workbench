@@ -1,43 +1,27 @@
 export const scenarios = [
-  {
-    id: 1,
-    name: "Normal Operating Conditions",
-    description:
-      "Runs the simulation using standard operating values and expected thresholds.",
-    configuration: {
-      duration: 60,
-      temperature: 72,
-      pressure: 30,
-      expectedMin: 20,
-      expectedMax: 80,
+    {
+        id:1,
+        name:"Normal Operating Test",
+        description:"Example",
+        filePath:
+            "../../../backend/config/scenarios/scenario1.json"
     },
-  },
-  {
-    id: 2,
-    name: "High Temperature Test",
-    description:
-      "Tests system behavior under elevated temperature conditions.",
-    configuration: {
-      duration: 90,
-      temperature: 110,
-      pressure: 32,
-      expectedMin: 20,
-      expectedMax: 100,
+
+    {
+        id:2,
+        name:"High Temperature Test",
+        description:"Example",
+        filePath:
+            "../../../backend/config/scenarios/scenario2.json"
     },
-  },
-  {
-    id: 3,
-    name: "Low Pressure Test",
-    description:
-      "Tests system behavior while operating with reduced system pressure.",
-    configuration: {
-      duration: 45,
-      temperature: 68,
-      pressure: 15,
-      expectedMin: 18,
-      expectedMax: 75,
-    },
-  },
+
+    {
+        id:3,
+        name:"Low Pressure Test",
+        description:"Example",
+        filePath:
+            "../../../backend/config/scenarios/scenario3.json"
+    }
 ];
 
 export const mockResults = {

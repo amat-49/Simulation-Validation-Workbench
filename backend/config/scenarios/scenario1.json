@@ -1,5 +1,5 @@
 {
-  "scenario_name": "basic_test",
+  "scenario_name": "Normal Operating Conditions",
   "parameters": {
     "initial_velocity": 0.0,
     "mass": 10.0,
@@ -8,17 +8,8 @@
     "duration": 4.0
   },
   "expected_metrics": {
-    "final_velocity": {
-      "expected_min": 15.0,
-      "expected_max": 20.0
-    },
-    "distance_traveled": {
-      "expected_min": 30.0,
-      "expected_max": 40.0
-    },
-    "energy_consumed": {
-      "expected_min": 190.0,
-      "expected_max": 210.0
-    }
+    "final_velocity": { "expected_min": 15.0, "expected_max": 20.0 },
+    "distance_traveled": { "expected_min": 30.0, "expected_max": 40.0 },
+    "energy_consumed": { "expected_min": 190.0, "expected_max": 210.0 }
   }
 }

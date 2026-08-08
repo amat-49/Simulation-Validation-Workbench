@@ -1,115 +1,145 @@
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // if using react-router
+import "./Configuration.css";
 
-const configurationLabels = {
-  duration: "Simulation Duration",
-  temperature: "Starting Temperature",
-  pressure: "Starting Pressure",
-  expectedMin: "Expected Minimum",
-  expectedMax: "Expected Maximum",
-};
-
-const configurationUnits = {
-  duration: "seconds",
-  temperature: "°F",
-  pressure: "PSI",
-  expectedMin: "",
-  expectedMax: "",
-};
-
-function Configuration() {
+export default function Configuration() {
+  const [configData, setConfigData] = useState(null);
+  const [filePath, setFilePath] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const storedScenario = localStorage.getItem("selectedScenario");
 
-  let scenario = null;
+  // Automatically load the file path from localStorage when the component mounts
+  useEffect(() => {
+    const savedPath = localStorage.getItem("selectedScenarioPath");
+    if (savedPath) {
+      loadConfigFromFile(savedPath);
+    }
+  }, []);
 
-  try {
-    scenario = storedScenario ? JSON.parse(storedScenario) : null;
-  } catch {
-    scenario = null;
-  }
+  const loadConfigFromFile = async (path) => {
+    try {
+      setLoading(true);
+      setError(null);
+      setFilePath(path);
 
-  if (!scenario) {
-    return (
-      <section>
-        <div className="empty-state">
-          <h2>No Scenario Selected</h2>
-          <p>
-            Return to the dashboard and select a scenario before reviewing its
-            configuration.
-          </p>
+      const parsedData = await window.electronAPI.readJsonFile(path);
+      if (!parsedData) {
+        throw new Error("Failed to parse JSON configuration file.");
+      }
+      setConfigData(parsedData);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-          <button
-            type="button"
-            className="primary-button"
-            onClick={() => navigate("/")}
-          >
-            Return to Dashboard
-          </button>
-        </div>
-      </section>
-    );
-  }
+  // Handler if they want to manually choose a different file using the dialog
+  const handleChooseDifferentFile = async () => {
+    try {
+      const selectedPath = await window.electronAPI.chooseScenarioFile();
+      if (selectedPath) {
+        localStorage.setItem("selectedScenarioPath", selectedPath);
+        loadConfigFromFile(selectedPath);
+      }
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  // Proceed to Execution page
+  const handleProceed = () => {
+    navigate("/execution");
+  };
 
   return (
-    <section>
-      <div className="page-header">
-        <div>
-          <p className="eyebrow">Selected Scenario</p>
-          <h2>Configuration Review</h2>
-          <p>{scenario.name}</p>
-        </div>
-
-        <span className="status-badge ready">Ready</span>
+    <div className="config-container">
+      <div className="config-header">
+        <h2>Scenario Configuration</h2>
+        <p className="subtitle">
+          Review parameters and validation criteria before running the simulation.
+        </p>
       </div>
 
-      <div className="panel">
-        <div className="panel-heading">
-          <div>
-            <h3>Scenario Details</h3>
-            <p>{scenario.description}</p>
+      <div className="config-action-bar">
+        <button className="secondary-btn" onClick={handleChooseDifferentFile}>
+          Choose Different File
+        </button>
+        {filePath && <span className="file-path-label">Active: {filePath}</span>}
+        
+        {configData && (
+          <button className="primary-btn proceed-btn" onClick={handleProceed}>
+             Proceed to Execution
+          </button>
+        )}
+      </div>
+
+      {loading && <p className="status-text">Loading configuration...</p>}
+      {error && <p className="error-text"> {error}</p>}
+
+      {!configData && !loading && !error && (
+        <div className="empty-state">
+          <p>No configuration selected. Please go back to the Dashboard and select a scenario.</p>
+        </div>
+      )}
+
+      {configData && (
+        <div className="config-grid">
+          {/* Overview Card */}
+          <div className="config-card">
+            <h3>Overview</h3>
+            <div className="info-row">
+              <span className="label">Scenario Name:</span>
+              <span className="value highlight">{configData.scenario_name || "Unnamed Scenario"}</span>
+            </div>
           </div>
 
-          <span className="scenario-id">ID: {scenario.id}</span>
+          {/* Parameters Table */}
+          <div className="config-card">
+            <h3>Simulation Parameters</h3>
+            <table className="config-table">
+              <thead>
+                <tr>
+                  <th>Parameter</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                {configData.parameters && Object.entries(configData.parameters).map(([key, value]) => (
+                  <tr key={key}>
+                    <td className="param-key">{key}</td>
+                    <td className="param-value">{String(value)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Expected Metrics Table */}
+          <div className="config-card full-width">
+            <h3>Validation Criteria (Expected Metrics)</h3>
+            <table className="config-table">
+              <thead>
+                <tr>
+                  <th>Metric</th>
+                  <th>Min Expected</th>
+                  <th>Max Expected</th>
+                </tr>
+              </thead>
+              <tbody>
+                {configData.expected_metrics && Object.entries(configData.expected_metrics).map(([metricName, range]) => (
+                  <tr key={metricName}>
+                    <td className="param-key">{metricName}</td>
+                    <td>{range.expected_min ?? range.min ?? "N/A"}</td>
+                    <td>{range.expected_max ?? range.max ?? "N/A"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-
-        <dl className="configuration-list">
-          {Object.entries(scenario.configuration).map(([key, value]) => (
-            <div key={key} className="configuration-row">
-              <dt>{configurationLabels[key] ?? key}</dt>
-
-              <dd>
-                {value} {configurationUnits[key]}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      </div>
-
-      <div className="information-banner">
-        Review the configuration values before continuing. The backend will
-        validate the full YAML or JSON configuration before the simulation
-        begins.
-      </div>
-
-      <div className="page-actions split-actions">
-        <button
-          type="button"
-          className="secondary-button"
-          onClick={() => navigate("/")}
-        >
-          Back to Scenarios
-        </button>
-
-        <button
-          type="button"
-          className="primary-button"
-          onClick={() => navigate("/execution")}
-        >
-          Continue to Execution
-        </button>
-      </div>
-    </section>
+      )}
+    </div>
   );
 }
-
-export default Configuration;

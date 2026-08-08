@@ -1,166 +1,135 @@
-import { useMemo, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { mockHistory } from "../data/mockData";
+import "./History.css";
 
-function History() {
-  const navigate = useNavigate();
+export default function History() {
+  const [runs, setRuns] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [statusFilter, setStatusFilter] = useState("All statuses");
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  const storedResult = localStorage.getItem("latestSimulationResult");
-
-  let latestResult = null;
-
-  try {
-    latestResult = storedResult ? JSON.parse(storedResult) : null;
-  } catch {
-    latestResult = null;
-  }
-
-  const historyRecords = useMemo(() => {
-    const records = [...mockHistory];
-
-    if (latestResult) {
-      const alreadyExists = records.some(
-        (record) =>
-          record.scenario === latestResult.scenarioName &&
-          record.date ===
-            new Date(latestResult.completedAt).toLocaleDateString()
-      );
-
-      if (!alreadyExists) {
-        records.unshift({
-          id: `RUN-${Date.now()}`,
-          scenario: latestResult.scenarioName,
-          date: new Date(latestResult.completedAt).toLocaleDateString(),
-          duration: latestResult.executionTime,
-          status: latestResult.overallStatus,
-        });
+  useEffect(() => {
+    async function fetchHistory() {
+      try {
+        const response = await window.electronAPI.getAllRuns();
+        if (response && response.success && response.data) {
+          setRuns(response.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch execution history from database:", err);
+      } finally {
+        setLoading(false);
       }
     }
+    fetchHistory();
+  }, []);
 
-    return records;
-  }, [latestResult]);
+  const filteredRuns = runs.filter((run) => {
+    const fileName = run.scenario_name || "";
+    const matchesSearch = fileName.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const status = (run.overall_status || "FAIL").toUpperCase();
+    const matchesStatus = 
+      statusFilter === "All statuses" || 
+      status === statusFilter.toUpperCase();
 
-  const filteredHistory = useMemo(() => {
-    return historyRecords.filter((run) => {
-      const matchesSearch = run.scenario
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
+    return matchesSearch && matchesStatus;
+  });
 
-      const matchesStatus =
-        statusFilter === "ALL" || run.status === statusFilter;
-
-      return matchesSearch && matchesStatus;
-    });
-  }, [historyRecords, searchTerm, statusFilter]);
-
+  const getScenarioDisplayName = (run) => {
+  // Check if the config snapshot or path mentions scenario 2 or 3
+  const snapshot = run.config_snapshot || "";
+  if (snapshot.includes("scenario2") || run.run_id === 2) return "High Load Stress Test";
+  if (snapshot.includes("scenario3") || run.run_id === 3) return "Thermal Overload Failure";
+  
+  if (run.run_id === 1 || snapshot.includes("scenario1") || run.scenario_name === "basic_test") {
+    return "Normal Operating Conditions";
+  }
+  
+  return run.scenario_name || "Custom Scenario";
+  };
+  
   return (
-    <section>
-      <div className="page-header">
+    <div className="history-container">
+      <div className="history-top-header">
         <div>
-          <p className="eyebrow">Run Records</p>
+          <span className="breadcrumb-tag">RUN RECORDS</span>
           <h2>Execution History</h2>
-          <p>
-            Search and review previous simulation runs and validation outcomes.
-          </p>
+          <p className="subtitle">Review previous simulation runs and validation outcomes from the database.</p>
         </div>
-
-        <span className="history-count">
-          {filteredHistory.length} record
-          {filteredHistory.length === 1 ? "" : "s"}
-        </span>
+        <div className="record-count-badge">
+          {filteredRuns.length} {filteredRuns.length === 1 ? "record" : "records"}
+        </div>
       </div>
 
-      <div className="panel">
-        <div className="history-controls">
-          <div className="search-control">
-            <label htmlFor="history-search">Search scenarios</label>
-
-            <input
-              id="history-search"
-              type="search"
-              value={searchTerm}
-              placeholder="Search by scenario name"
-              onChange={(event) => setSearchTerm(event.target.value)}
-            />
-          </div>
-
-          <div className="filter-control">
-            <label htmlFor="status-filter">Filter by status</label>
-
-            <select
-              id="status-filter"
-              value={statusFilter}
-              onChange={(event) => setStatusFilter(event.target.value)}
-            >
-              <option value="ALL">All statuses</option>
-              <option value="PASS">Pass</option>
-              <option value="FAIL">Fail</option>
-            </select>
-          </div>
+      <div className="filter-card">
+        <div className="filter-group">
+          <label>Search scenarios</label>
+          <input
+            type="text"
+            placeholder="Search by scenario name..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
+          />
         </div>
 
-        <div className="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Run ID</th>
-                <th>Scenario</th>
-                <th>Date</th>
-                <th>Duration</th>
-                <th>Status</th>
-              </tr>
-            </thead>
+        <div className="filter-group">
+          <label>Filter by status</label>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="status-select"
+          >
+            <option value="All statuses">All statuses</option>
+            <option value="PASS">PASS</option>
+            <option value="FAIL">FAIL</option>
+          </select>
+        </div>
+      </div>
 
-            <tbody>
-              {filteredHistory.length === 0 ? (
-                <tr>
-                  <td colSpan="5" className="empty-table-message">
-                    No execution records match your search.
-                  </td>
-                </tr>
-              ) : (
-                filteredHistory.map((run) => (
-                  <tr key={run.id}>
-                    <td>{run.id}</td>
-                    <td>{run.scenario}</td>
-                    <td>{run.date}</td>
-                    <td>{run.duration}</td>
+      <div className="table-wrapper">
+        <table className="history-table">
+          <thead>
+            <tr>
+              <th>RUN ID</th>
+              <th>SCENARIO NAME</th>
+              <th>DATE</th>
+              <th>STATUS</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr><td colSpan="4" className="empty-message">Loading records from database...</td></tr>
+            ) : filteredRuns.length === 0 ? (
+              <tr><td colSpan="4" className="empty-message">No execution records found in database.</td></tr>
+            ) : (
+              filteredRuns.map((run) => {
+                const status = (run.overall_status || "FAIL").toUpperCase();
+                const isPass = status === "PASS";
+                const dateStr = run.start_time ? new Date(run.start_time).toLocaleString() : "N/A";
+
+                return (
+                  <tr key={run.run_id}>
+                    <td className="run-id-cell">#{run.run_id}</td>
+                    <td className="scenario-cell">{run.scenario_name || "N/A"}</td>
+                    <td>{dateStr}</td>
                     <td>
-                      <span
-                        className={`status-badge ${run.status.toLowerCase()}`}
-                      >
-                        {run.status}
+                      <span className={`status-pill ${isPass ? "pass" : "fail"}`}>
+                        {status}
                       </span>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                );
+              })
+            )}
+          </tbody>
+        </table>
       </div>
 
-      <div className="page-actions split-actions">
-        <button
-          type="button"
-          className="secondary-button"
-          onClick={() => navigate("/results")}
-        >
-          Back to Results
-        </button>
-
-        <button
-          type="button"
-          className="primary-button"
-          onClick={() => navigate("/reports")}
-        >
-          Go to Reports
-        </button>
+      <div className="history-footer-actions">
       </div>
-    </section>
+    </div>
   );
 }
-
-export default History;

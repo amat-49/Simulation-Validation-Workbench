@@ -1,99 +1,93 @@
-import { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import { scenarios } from "../data/mockData";
 
 function Dashboard() {
   const navigate = useNavigate();
-  const [selectedScenario, setSelectedScenario] = useState(null);
-  const [errorMessage, setErrorMessage] = useState("");
 
-  function handleScenarioSelection(scenario) {
-    setSelectedScenario(scenario);
-    setErrorMessage("");
-  }
-
-  function handleContinue() {
-    if (!selectedScenario) {
-      setErrorMessage("Select a scenario before continuing.");
-      return;
-    }
-
-    localStorage.setItem(
-      "selectedScenario",
-      JSON.stringify(selectedScenario)
-    );
-
+  // 1. Handler for pre-defined example cards
+  const handleSelectExample = (filePath) => {
+    localStorage.setItem("selectedScenarioPath", filePath);
     navigate("/configuration");
-  }
+  };
+
+  // 2. Handler for custom file upload via Electron dialog
+  const handleUploadCustom = async () => {
+    try {
+      const filePath = await window.electronAPI.chooseScenarioFile();
+      if (filePath) {
+        localStorage.setItem("selectedScenarioPath", filePath);
+        navigate("/configuration");
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+    }
+  };
 
   return (
-    <section>
-      <div className="page-header">
-        <div>
-          <p className="eyebrow">Simulation Workbench</p>
-          <h2>Scenario Library</h2>
-          <p>
-            Select a simulation scenario to review its configuration and begin
-            execution.
-          </p>
+    <div className="dashboard-container">
+      <h2>Select a Simulation Scenario</h2>
+      
+      {/* Upload Custom File Card/Button */}
+      <div className="upload-section" style={{ marginBottom: "20px" }}>
+        <button className="primary-button" onClick={handleUploadCustom}>
+          Upload Custom JSON File
+        </button>
+      </div>
+
+      <hr />
+
+      <h3>Pre-defined Scenarios</h3>
+        <div className="scenario-grid">
+        {/* Scenario 1 */}
+        <div className="panel scenario-card">
+          <h4>Normal Operating Conditions</h4>
+          <p>Standard baseline temperature and pressure testing profile.</p>
+          <button 
+            className="secondary-button" 
+            onClick={() => {
+              localStorage.setItem("selectedScenarioPath", "backend/config/scenarios/scenario1.json");
+              localStorage.setItem("selectedScenarioId", 1);
+              navigate("/configuration");
+            }}
+          >
+            Select & Run
+          </button>
+        </div>
+
+        {/* Scenario 2 */}
+        <div className="panel scenario-card">
+          <h4>High Load Stress Test</h4>
+          <p>Pushing system throughput to maximum safe operational thresholds.</p>
+          <button 
+            className="secondary-button" 
+            onClick={() => {
+              localStorage.setItem("selectedScenarioPath", "backend/config/scenarios/scenario2.json");
+              localStorage.setItem("selectedScenarioId", 2);
+              navigate("/configuration");
+            }}
+          >
+            Select & Run
+          </button>
+        </div>
+
+        {/* Scenario 3 */}
+        <div className="panel scenario-card">
+          <h4>Thermal Overload Failure</h4>
+          <p>Extreme environmental parameters designed to trigger safety faults.</p>
+          <button 
+            className="secondary-button" 
+            onClick={() => {
+              localStorage.setItem("selectedScenarioPath", "backend/config/scenarios/scenario3.json");
+              localStorage.setItem("selectedScenarioId", 3);
+              navigate("/configuration");
+            }}
+          >
+            Select & Run
+          </button>
         </div>
       </div>
 
-      <div className="scenario-grid">
-        {scenarios.map((scenario) => {
-          const isSelected = selectedScenario?.id === scenario.id;
-
-          return (
-            <button
-              type="button"
-              key={scenario.id}
-              className={
-                isSelected
-                  ? "scenario-card scenario-card-selected"
-                  : "scenario-card"
-              }
-              onClick={() => handleScenarioSelection(scenario)}
-              aria-pressed={isSelected}
-            >
-              <div className="scenario-card-header">
-                <span className="scenario-number">
-                  {String(scenario.id).padStart(2, "0")}
-                </span>
-
-                {isSelected && (
-                  <span className="selected-label">Selected</span>
-                )}
-              </div>
-
-              <h3>{scenario.name}</h3>
-              <p>{scenario.description}</p>
-
-              <div className="scenario-details">
-                <span>{scenario.configuration.duration} seconds</span>
-                <span>{scenario.configuration.temperature}°F</span>
-                <span>{scenario.configuration.pressure} PSI</span>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      {errorMessage && (
-        <p className="error-message" role="alert">
-          {errorMessage}
-        </p>
-      )}
-
-      <div className="page-actions">
-        <button
-          type="button"
-          className="primary-button"
-          onClick={handleContinue}
-        >
-          Review Configuration
-        </button>
-      </div>
-    </section>
+    </div>
   );
 }
 
